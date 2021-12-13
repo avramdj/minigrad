@@ -14,6 +14,9 @@ class CudaDevice(cu.ndarray):
     def exp(self):
         return cu.exp(self)
 
+    def to_cpu(self):
+        return self.get()
+
     @staticmethod
     def array(data):
-        return cu.array(data)
+        return cu.asarray(data).view(CudaDevice)

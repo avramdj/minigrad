@@ -123,7 +123,7 @@ class Tensor:
         if isinstance(data, list):
             data = np.array(data, dtype=np.float32)
         if isinstance(data, np.ndarray):
-            return data.astype(Device[device])
+            return Device[device].array(data)
         if isinstance(data, Tensor):
             return data._data
         if isinstance(data, Device[device]):

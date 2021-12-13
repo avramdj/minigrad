@@ -14,6 +14,9 @@ class CPUDevice(np.ndarray):
     def exp(self):
         return np.exp(self)
 
+    def to_cpu(self):
+        return self
+
     @staticmethod
     def array(data):
-        return np.array(data)
+        return np.asarray(data).view(CPUDevice)
