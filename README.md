@@ -36,7 +36,7 @@ learning_rate = 1e-4
 
 x = Tensor.full(shape, 2) # initalize x to 2
 
-for i in range(4000):
+for i in range(300):
     z = (2*x + 50)**2 + x**2
     losses.append(z.numpy()[0])
     z.backward() # compute gradient
@@ -49,4 +49,4 @@ plt.plot(losses)
 plt.show()
 ```
 
-<img src="https://gcdn.pbrd.co/images/Hqjqnc7d8PXp.png?o=1" width="35%"/>
+<img src="https://gcdn.pbrd.co/images/NR9J9XKnN6ER.png?o=1" width="35%"/>
