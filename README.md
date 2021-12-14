@@ -4,22 +4,24 @@ Automatic tensor differentiation engine with a machine learning library on top o
 - GPU accelerated
 - PyTorch-like API
 
+### How it works
+
 The gradient of a tensor function `z` with respect to `x` can be computed using the [chain rule](https://en.wikipedia.org/wiki/Chain_rule).
 
 <img src="https://gcdn.pbrd.co/images/hKCJBEtyQ79h.png?o=1" width="20%"/>
 
 This property of differentiation allows us to compute the gradient by dynamically building a
-[directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph) of the operations that produced `z`.
+[directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph) of the operations and operands  that produced `z`.
 
-### Example
+### Simple example
 
-We are minimizing the following function:
+Minimizing the following real-valued function:
 
-<img src="https://gcdn.pbrd.co/images/Bokf3btMl72H.png?o=1" width="45%"/>
+<!-- <img src="https://gcdn.pbrd.co/images/Bokf3btMl72H.png?o=1" width="45%"/> -->
 
 <img src="https://gcdn.pbrd.co/images/HcMzdob6yUhg.png?o=1" width="35%"/>
 
-which has a local minima at `x = -20` where `z(x) = 500` (suppose )
+which has a local minima at `x = -20` where `z(x) = 500`
 
 ```py
 import minigrad
@@ -28,7 +30,7 @@ import matplotlib.pyplot as plt
 
 minigrad.set_device("cuda")
 
-shape = (256, 256)
+shape = (1,)
 losses = []
 learning_rate = 1e-4
 
