@@ -4,6 +4,8 @@ Automatic tensor differentiation engine with a machine learning library on top o
 - GPU accelerated
 - PyTorch-like API
 
+<!-- It's not quite [autograd](https://github.com/HIPS/autograd), definitely more than [micrograd](https://github.com/karpathy/micrograd) though, almost like [tinygrad](https://github.com/geohot/tinygrad)... -->
+
 ### How it works
 
 The gradient of a tensor function `z` with respect to `x` can be computed using the [chain rule](https://en.wikipedia.org/wiki/Chain_rule).
@@ -11,7 +13,7 @@ The gradient of a tensor function `z` with respect to `x` can be computed using 
 <img src="https://gcdn.pbrd.co/images/hKCJBEtyQ79h.png?o=1" width="20%"/>
 
 This property of differentiation allows us to compute the gradient by dynamically building a
-[directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph) of the operations and operands  that produced `z` and visiting it in reverse topological order.
+[directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph) of the operations that produced `z` and visiting it in reverse topological order.
 
 ### Simple example
 
