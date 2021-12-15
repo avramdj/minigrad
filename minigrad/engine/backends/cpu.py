@@ -19,4 +19,4 @@ class CPUDevice(np.ndarray):
 
     @staticmethod
     def array(data):
-        return np.asarray(data).view(CPUDevice)
+        return np.array(data).view(CPUDevice)

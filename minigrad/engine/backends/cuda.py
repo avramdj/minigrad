@@ -1,4 +1,5 @@
 import cupy as cu
+from cpu import CPUDevice
 
 
 class CudaDevice(cu.ndarray):
@@ -15,8 +16,8 @@ class CudaDevice(cu.ndarray):
         return cu.exp(self)
 
     def to_cpu(self):
-        return self.get()
+        return self.get().view(CPUDevice)
 
     @staticmethod
     def array(data):
-        return cu.asarray(data).view(CudaDevice)
+        return cu.array(data, subok=True).view(CudaDevice)
