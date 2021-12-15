@@ -2,7 +2,7 @@ import numpy as np
 from device import Device
 from typing import Union, Iterable
 from numbers import Number
-from function import Function, Add, Sub, Mul, Pow, Log, Exp, Neg
+from function import Function, Add, Sub, Mul, Pow, Log, Exp, Neg, Dot
 
 
 class Tensor:
@@ -15,18 +15,30 @@ class Tensor:
         self.grad = None
         self.requires_grad = requires_grad
         self._function = None
-        self._parents = None
+        self._parents = []
 
     def backward(self):
-        if not self.grad:
-            self.grad = self.ones_like(self)
-            self.grad.requires_grad = False
-        if not self._function:
-            return
-        nabla = self._function.backward()
-        for derivative, parent in zip(nabla, self._parents):
-            parent.grad = Tensor(self.grad._data * derivative)
-            parent.backward()
+        visited = set()
+        topo_nodes: list[Tensor] = []
+
+        def topo_dag(node: Tensor):
+            if node not in visited:
+                visited.add(node)
+                for p in node._parents:
+                    topo_dag(p)
+                topo_nodes.append(node)
+
+        topo_dag(self)
+        for v in reversed(topo_nodes):
+            if not v.grad:
+                v.grad = v.ones_like(v)
+                v.grad.requires_grad = False
+            if not v._function:
+                continue
+            nabla = v._function.backward()
+            for derivative, parent in zip(nabla, v._parents):
+                parent.grad = Tensor(v.grad._data * derivative + (parent.grad._data if parent.grad else 0))
+                pass
 
     @property
     def shape(self):
@@ -40,8 +52,17 @@ class Tensor:
 
     def zero_grad(self):
         self.grad = None
-        self._parents = None
+        self._parents = []
         self._function = None
+
+    def dot(self, other: "Tensor"):
+        return self._binary_op(self, other, Dot)
+
+    def log(self):
+        return self._unary_op(self, Log)
+
+    def exp(self, alpha):
+        return self._unary_op(self, Exp)
 
     def __neg__(self):
         return self._unary_op(self, Neg)
@@ -49,10 +70,19 @@ class Tensor:
     def __add__(self, other: "Tensor"):
         return self._binary_op(self, other, Add)
 
+    def __radd__(self, other: "Tensor"):
+        return self._binary_op(self, other, Add)
+
     def __sub__(self, other: "Tensor"):
         return self._binary_op(self, other, Sub)
 
+    def __rsub__(self, other: "Tensor"):
+        return self._binary_op(self, other, Sub)
+
     def __mul__(self, other: "Tensor"):
+        return self._binary_op(self, other, Mul)
+
+    def __rmul__(self, other: "Tensor"):
         return self._binary_op(self, other, Mul)
 
     def __truediv__(self, other: "Tensor"):
@@ -80,7 +110,7 @@ class Tensor:
         if not a.requires_grad:
             return res
         res._function = func
-        res._parents = (a, b)
+        res._parents = [a, b]
         return res
 
     @staticmethod
@@ -90,7 +120,7 @@ class Tensor:
         if not a.requires_grad:
             return res
         res._function = func
-        res._parents = (a,)
+        res._parents = [a]
         return res
 
     @staticmethod
@@ -100,15 +130,22 @@ class Tensor:
         if not a.requires_grad:
             return res
         res._function = func
-        res._parents = (a,)
+        res._parents = [a]
         return res
 
     @staticmethod
-    def ones(shape: Union[int, Iterable[int]], device=Device.CURRENT):
+    def ones(shape: Union[int, Iterable[int]], device=None):
+        device = device if device else Device.CURRENT
         return Tensor(np.ones(shape), device=device)
 
     @staticmethod
-    def full(shape: Union[int, Iterable[int]], a: Number, device=Device.CURRENT):
+    def zeros(shape: Union[int, Iterable[int]], device=None):
+        device = device if device else Device.CURRENT
+        return Tensor(np.zeros(shape), device=device)
+
+    @staticmethod
+    def full(shape: Union[int, Iterable[int]], a: Union[int, float], device=None):
+        device = device if device else Device.CURRENT
         return Tensor(np.full(shape, a), device=device)
 
     @staticmethod
@@ -117,6 +154,13 @@ class Tensor:
         if isinstance(a, Tensor):
             a = a._data
         return Tensor(np.ones_like(a, dtype=np.float32), device)
+
+    @staticmethod
+    def zeros_like(a: Union[np.ndarray, "Tensor"], device=None):
+        device = device if device else a.device
+        if isinstance(a, Tensor):
+            a = a._data
+        return Tensor(np.zeros_like(a, dtype=np.float32), device)
 
     @staticmethod
     def _move(data, device) -> np.ndarray:
