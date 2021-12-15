@@ -19,4 +19,4 @@ class CudaDevice(cu.ndarray):
 
     @staticmethod
     def array(data):
-        return cu.asarray(data).view(CudaDevice)
+        return cu.asarray(data, dtype=cu.float32).view(CudaDevice)

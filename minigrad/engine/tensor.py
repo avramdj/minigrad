@@ -3,6 +3,7 @@ from device import Device
 from typing import Union, Iterable
 from numbers import Number
 from function import Function, Add, Sub, Mul, Pow, Log, Exp, Neg
+from utils import is_grad
 
 
 class Tensor:
@@ -10,8 +11,8 @@ class Tensor:
 
     def __init__(self, data: Union[list, np.ndarray, "Tensor"], device=None, requires_grad=True):
         self.device = device if device else Device.CURRENT
-        self._data = self._move(data, self.device)
-        self._shape = self._data.shape
+        self.data = self._move(data, self.device)
+        self._shape = self.data.shape
         self.grad = None
         self.requires_grad = requires_grad
         self._function = None
@@ -25,7 +26,7 @@ class Tensor:
             return
         nabla = self._function.backward()
         for derivative, parent in zip(nabla, self._parents):
-            parent.grad = Tensor(self.grad._data * derivative)
+            parent.grad = Tensor(self.grad.data * derivative)
             parent.backward()
 
     @property
@@ -33,15 +34,21 @@ class Tensor:
         return self._shape
 
     def detach(self):
-        return Tensor(self._data)
+        return Tensor(self.data)
 
     def numpy(self):
-        return self.detach()._data
+        return self.detach().data
 
     def zero_grad(self):
         self.grad = None
         self._parents = None
         self._function = None
+
+    def exp(self):
+        return self._unary_op(self, Exp)
+
+    def log(self):
+        return self._unary_op(self, Log)
 
     def __neg__(self):
         return self._unary_op(self, Neg)
@@ -49,10 +56,19 @@ class Tensor:
     def __add__(self, other: "Tensor"):
         return self._binary_op(self, other, Add)
 
+    def __radd__(self, other: "Tensor"):
+        return self._binary_op(self, other, Add)
+
     def __sub__(self, other: "Tensor"):
         return self._binary_op(self, other, Sub)
 
+    def __rsub__(self, other: "Tensor"):
+        return self._binary_op(self, other, Sub)
+
     def __mul__(self, other: "Tensor"):
+        return self._binary_op(self, other, Mul)
+
+    def __rmul__(self, other: "Tensor"):
         return self._binary_op(self, other, Mul)
 
     def __truediv__(self, other: "Tensor"):
@@ -63,21 +79,21 @@ class Tensor:
         return self._unary_param_op(self, alpha, Pow)
 
     def __str__(self):
-        return self._data.__str__()
+        return self.data.__str__()
 
     def __repr__(self):
-        return f"<Tensor {self._data.shape}>"
+        return f"<Tensor {self.data.shape}>"
 
     def __getitem__(self, item):
-        return self._data[item]
+        return self.data[item]
 
     @staticmethod
     def _binary_op(a: "Tensor", b: "Tensor", func: Function.__class__):
         if isinstance(b, Number):
             b = Tensor(np.full(a.shape, b, dtype=np.float32))
-        func = func(a._data, b._data)
+        func = func(a.data, b.data)
         res = Tensor(func.forward())
-        if not a.requires_grad:
+        if not a.requires_grad or is_grad():
             return res
         res._function = func
         res._parents = (a, b)
@@ -85,9 +101,9 @@ class Tensor:
 
     @staticmethod
     def _unary_op(a: "Tensor", func: Function.__class__):
-        func = func(a._data)
+        func = func(a.data)
         res = Tensor(func.forward())
-        if not a.requires_grad:
+        if not a.requires_grad or is_grad():
             return res
         res._function = func
         res._parents = (a,)
@@ -95,9 +111,9 @@ class Tensor:
 
     @staticmethod
     def _unary_param_op(a: "Tensor", alpha, func: Function.__class__):
-        func = func(a._data, alpha)
+        func = func(a.data, alpha)
         res = Tensor(func.forward())
-        if not a.requires_grad:
+        if not a.requires_grad or is_grad():
             return res
         res._function = func
         res._parents = (a,)
@@ -115,7 +131,7 @@ class Tensor:
     def ones_like(a: Union[np.ndarray, "Tensor"], device=None):
         device = device if device else a.device
         if isinstance(a, Tensor):
-            a = a._data
+            a = a.data
         return Tensor(np.ones_like(a, dtype=np.float32), device)
 
     @staticmethod
@@ -125,7 +141,7 @@ class Tensor:
         if isinstance(data, np.ndarray):
             return Device[device].array(data)
         if isinstance(data, Tensor):
-            return data._data
+            return data.data
         if isinstance(data, Device[device]):
             return data
         raise RuntimeError(f"Unknown data type {type(data)}")
