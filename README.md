@@ -1,7 +1,7 @@
 # minigrad
 Automatic tensor differentiation engine with a machine learning library on top of it.
 
-- GPU accelerated
+- ~~GPU accelerated~~
 - PyTorch-like API
 
 <!-- It's not quite [autograd](https://github.com/HIPS/autograd), definitely more than [micrograd](https://github.com/karpathy/micrograd) though, almost like [tinygrad](https://github.com/geohot/tinygrad)... -->
