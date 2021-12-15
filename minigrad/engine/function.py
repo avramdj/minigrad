@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Function:
     """ Function base for Add, Sub, etc... """
     pass
@@ -15,7 +16,7 @@ class Add(Function):
 
     def backward(self):
         ones = np.ones_like(self.a)
-        return np.array([ones, ones])
+        return [ones, ones]
 
 
 class Sub(Function):
@@ -28,7 +29,7 @@ class Sub(Function):
 
     def backward(self):
         d = np.ones_like(self.a)
-        return np.array([d, d])
+        return [d, d]
 
 
 class Mul(Function):
@@ -42,7 +43,7 @@ class Mul(Function):
     def backward(self):
         da = self.b
         db = self.a
-        return np.array([da, db])
+        return [da, db]
 
 
 class Pow(Function):
@@ -55,7 +56,21 @@ class Pow(Function):
 
     def backward(self):
         da = self.a.pow(self.b - 1.0) * self.b
-        return np.array([da])
+        return [da]
+
+
+class Dot(Function):
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+
+    def forward(self):
+        return self.a.dot(self.b)
+
+    def backward(self):
+        da = self.a.pow(self.b - 1.0) * self.b
+        db = self.b.pow(self.a - 1.0) * self.a
+        return [da, db]
 
 
 class Log(Function):
@@ -67,7 +82,7 @@ class Log(Function):
 
     def backward(self):
         da = self.a.pow(-1.0)
-        return np.array([da])
+        return [da]
 
 
 class Exp(Function):
@@ -79,7 +94,7 @@ class Exp(Function):
 
     def backward(self):
         da = self.forward()
-        return np.array([da])
+        return [da]
 
 
 class Neg(Function):
@@ -91,4 +106,4 @@ class Neg(Function):
 
     def backward(self):
         da = -np.ones_like(self.a)
-        return np.array([da])
+        return [da]
