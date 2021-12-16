@@ -1,5 +1,5 @@
 import os
-import backends
+from . import backends
 
 
 class Device:

@@ -1,5 +1,7 @@
-import sdg
+from . import sgd
+from . import adam
 
-SDG = sdg.SDG
+SGD = sgd.SGD
+Adam = adam.Adam
 
-__all__ = [SDG]
+__all__ = [SGD, Adam]

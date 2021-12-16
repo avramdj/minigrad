@@ -14,8 +14,26 @@ class CPUDevice(np.ndarray):
     def exp(self):
         return np.exp(self)
 
+    def sqrt(self):
+        return np.sqrt(self)
+
+    def tanh(self):
+        return np.tanh(self)
+
+    def relu(self):
+        return np.maximum(self, 0.)
+
     def to_cpu(self):
         return self
+
+    def add_axis(self, axis):
+        return np.expand_dims(self, axis)
+
+    def ones(self):
+        return np.ones_like(self)
+
+    def zeros(self):
+        return np.zeros_like(self)
 
     @staticmethod
     def array(data):

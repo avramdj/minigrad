@@ -1,5 +1,5 @@
 import cupy as cu
-from cpu import CPUDevice
+from .cpu import CPUDevice
 
 
 class CudaDevice(cu.ndarray):
