@@ -26,7 +26,6 @@ class MnistClassifier(nn.Module):
         self.linear2 = nn.layers.Linear(input_size=z_size, output_size=num_classes)
         # self.linear3 = nn.layers.Linear(input_size=z_size, output_size=num_classes)
         self.softmax = nn.layers.Softmax()
-        self._register_modules([self.linear1, self.linear2])
 
     def forward(self, x):
         x = self.flatten(x)
