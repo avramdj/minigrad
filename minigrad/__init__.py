@@ -1,10 +1,10 @@
-from engine import Tensor
+from .engine import Tensor, Parameter
 from engine import device
-import engine
-import optim
-import nn
+from . import engine
+from . import optim
+from . import nn
 
 set_device = device.Device.set_device
 no_grad = engine.no_grad
 
-__all__ = [engine, Tensor, no_grad, optim, nn]
+__all__ = [engine, Tensor, Parameter, no_grad, optim, nn]

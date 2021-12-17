@@ -1,8 +1,16 @@
 from typing import Iterable, Union
-from engine import Tensor
+from ..engine import Tensor, Parameter
 
 
-class Module:
+class _MetaModule(type):
+    def __call__(self, *args, **kwargs):
+        module = super().__call__(*args, **kwargs)
+        module._register_child_modules()
+        module._register_child_params()
+        return module
+
+
+class Module(metaclass=_MetaModule):
     """
     Base class for all minigrad modules.
     Derived classes must implement forward(self, *args, **kwargs)
@@ -23,6 +31,16 @@ class Module:
             modules = [modules]
         for module in modules:
             self._register_params(module.params())
+
+    def _register_child_modules(self):
+        for name, node in self.__dict__.items():
+            if isinstance(node, Module):
+                self._register_params(node.params())
+
+    def _register_child_params(self):
+        for name, node in self.__dict__.items():
+            if isinstance(node, Parameter):
+                self._register_params(node)
 
     def __call__(self, *args, **kwargs):
         return self.forward(*args, **kwargs)

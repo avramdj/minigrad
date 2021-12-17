@@ -1,5 +1,5 @@
 from minigrad.nn import Module
-from minigrad import Tensor
+from minigrad import Tensor, Parameter
 
 
 class Linear(Module):
@@ -11,9 +11,8 @@ class Linear(Module):
             output_size = output_size[0]
         self.input_size = input_size
         self.output_size = output_size
-        self.matrix = Tensor.rand((self.output_size, self.input_size), requires_grad=True)
-        self.bias = Tensor.zeros((self.output_size,), requires_grad=True)
-        self._register_params([self.matrix, self.bias])
+        self.matrix = Parameter.rand_kaiming((self.output_size, self.input_size), requires_grad=True)
+        self.bias = Parameter.ones((self.output_size,), requires_grad=True)
 
     def forward(self, x):
         res = self.matrix.dot(x) + self.bias
@@ -36,6 +35,14 @@ class Sigmoid(Module):
         return (1+(-x).exp())**(-1)
 
 
+class Tanh(Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x):
+        return x.tanh()
+
+
 class Softmax(Module):
     def __init__(self):
         super().__init__()
@@ -43,6 +50,14 @@ class Softmax(Module):
     def forward(self, x):
         e_x = x.exp()
         return e_x / e_x.sum()
+
+
+class LogSoftmax(Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x):
+        return x - x.max()
 
 
 class Flatten(Module):

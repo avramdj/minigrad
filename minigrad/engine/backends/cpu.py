@@ -35,6 +35,9 @@ class CPUDevice(np.ndarray):
     def zeros(self):
         return np.zeros_like(self)
 
+    def clip(self, a, b):
+        return np.clip(self, a, b)
+
     @staticmethod
     def array(data):
         return np.array(data).view(CPUDevice)

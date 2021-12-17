@@ -12,8 +12,7 @@ class Add(Function):
         return self.a + self.b
 
     def backward(self, grad):
-        ones = self.a.ones() * grad
-        return [ones, ones]
+        return [grad, grad]
 
 
 class Sub(Function):
@@ -25,8 +24,7 @@ class Sub(Function):
         return self.a - self.b
 
     def backward(self, grad):
-        d = self.a.ones() * grad
-        return [d, d]
+        return [grad, -grad]
 
 
 class Mul(Function):
@@ -107,7 +105,7 @@ class Exp(Function):
         return self.a.exp()
 
     def backward(self, grad):
-        da = self.forward() * grad
+        da = self.a.exp() * grad
         return [da]
 
 
@@ -120,6 +118,18 @@ class Sqrt(Function):
 
     def backward(self, grad):
         da = 0.5 * self.forward().pow(-1) * grad
+        return [da]
+
+
+class Tanh(Function):
+    def __init__(self, a):
+        self.a = a
+
+    def forward(self):
+        return self.a.tanh()
+
+    def backward(self, grad):
+        da = (1 - self.a.tanh()**2) * grad
         return [da]
 
 
@@ -160,6 +170,20 @@ class Sum(Function):
         return [da]
 
 
+class Max(Function):
+    """ bad """
+    def __init__(self, a, axis):
+        self.a = a
+        self.axis = axis
+
+    def forward(self):
+        return self.a.max()
+
+    def backward(self, grad):
+        da = self.a.ones() * grad
+        return [da]
+
+
 class Neg(Function):
     def __init__(self, a):
         self.a = a
@@ -168,5 +192,4 @@ class Neg(Function):
         return -self.a
 
     def backward(self, grad):
-        da = -self.a.ones() * grad
-        return [da]
+        return [-grad]
