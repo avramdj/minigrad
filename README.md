@@ -53,7 +53,7 @@ plt.show()
 
 
 ### The Neural Network module
-Solving [MNIST](https://en.wikipedia.org/wiki/MNIST_database) shouldn't be a problem once we have an autograd engine, but it's even easier with a neural network submodule
+Solving [MNIST](https://en.wikipedia.org/wiki/MNIST_database) shouldn't be a problem once you have an autograd engine, but it's even easier with a neural network library
 
 ...hence `minigrad.nn`
 
