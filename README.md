@@ -82,7 +82,8 @@ class MnistClassifier(nn.Module):
     def __init__(self, input_shape, num_classes, z_size=64):
         super().__init__()
         self.input_shape = input_shape
-        # child modules like this are automatically registered in the parent module if they have trainable params
+        # child modules like this are automatically registered in the parent module
+        # if they have trainable params
         self.flatten = nn.Flatten()
         self.linear1 = nn.Linear(input_size=np.prod(input_shape), output_size=z_size)
         self.activation = nn.Tanh()
