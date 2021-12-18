@@ -1,10 +1,8 @@
 # minigrad
-Automatic tensor differentiation engine with a machine learning library on top of it.
+Minigrad is an automatic tensor differentiation engine with a machine learning library on top of it.
 
-- GPU accelerated
 - PyTorch-like API
-
-<!-- It's not quite [autograd](https://github.com/HIPS/autograd), definitely more than [micrograd](https://github.com/karpathy/micrograd) though, almost like [tinygrad](https://github.com/geohot/tinygrad)... -->
+- GPU accelerated (soon)
 
 ### How it works
 
@@ -30,7 +28,7 @@ import minigrad
 from minigrad import Tensor
 import matplotlib.pyplot as plt
 
-minigrad.set_device("cuda")
+minigrad.set_device("cpu")
 
 history = []
 learning_rate = 1e-4
