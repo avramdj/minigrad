@@ -21,7 +21,7 @@ class CPUDevice(np.ndarray):
         return np.tanh(self)
 
     def relu(self):
-        return np.maximum(self, 0.)
+        return np.maximum(self, 0)
 
     def to_cpu(self):
         return self

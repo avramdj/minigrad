@@ -11,6 +11,8 @@ def broadcast(a, shape):
 
 
 def unbroadcast(a, shape):
+    if shape == (1,):
+        return a.sum().reshape((1,))
     axdiff = len(a.shape) - len(shape)
     if axdiff <= 0:
         return a
@@ -122,7 +124,7 @@ class Log(Function):
 
     def backward(self, grad):
         da = grad / self.a
-        return [unbroadcast(da, self.a.shape)]
+        return [da]
 
 
 class Exp(Function):
@@ -135,7 +137,7 @@ class Exp(Function):
 
     def backward(self, grad):
         da = self.forward() * grad
-        return [unbroadcast(da, self.a.shape)]
+        return [da]
 
 
 class Sqrt(Function):
@@ -147,7 +149,7 @@ class Sqrt(Function):
 
     def backward(self, grad):
         da = 0.5 * self.forward().pow(-1) * grad
-        return [unbroadcast(da, self.a.shape)]
+        return [da]
 
 
 class Tanh(Function):
@@ -159,7 +161,7 @@ class Tanh(Function):
 
     def backward(self, grad):
         da = (1 - self.a.tanh() ** 2) * grad
-        return [unbroadcast(da, self.a.shape)]
+        return [da]
 
 
 class ReLU(Function):
@@ -170,8 +172,8 @@ class ReLU(Function):
         return self.a.relu()
 
     def backward(self, grad):
-        da = (self.a > 0) * grad
-        return [unbroadcast(da, self.a.shape)]
+        da = (self.a >= 0) * grad
+        return [da]
 
 
 class Reshape(Function):
@@ -254,7 +256,7 @@ class Min(Function):
     # TODO: FIX BACKWARD
     def backward(self, grad):
         ones = self.a == grad
-        div = ones.sum(axis=self.axis)
+        div = ones.sum(axis=self.axis, keepdim=True)
         da = ones * grad / div
         return [unbroadcast(da, self.a.shape)]
 

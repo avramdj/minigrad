@@ -8,6 +8,7 @@ class Adam(Optimizer):
     """
     Adam implementation.
     The Adaptive Moment Estimation algorithm for stochastic gradient descent.
+    see: https://arxiv.org/abs/1412.6980
     """
     def __init__(self, params: Iterable[Tensor], learning_rate=1e-3, b1=0.9, b2=0.999, eps=1e-8):
         super().__init__(params)

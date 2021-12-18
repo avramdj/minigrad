@@ -23,6 +23,15 @@ class ReLU(Module):
         return x.relu()
 
 
+class LeakyReLU(Module):
+    def __init__(self):
+        super().__init__()
+        raise NotImplementedError("No leaky relu yet...")
+
+    def forward(self, x):
+        pass
+
+
 class Sigmoid(Module):
     def __init__(self):
         super().__init__()

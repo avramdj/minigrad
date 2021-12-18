@@ -42,9 +42,8 @@ def cross_entropy(targets, predictions, eps=1e-12, one_hot=False, C=None):
     if not one_hot:
         targets = one_hot_encode(targets, C=C)
     predictions = predictions.clip(eps, 1 - eps)
-    n = predictions.shape[1]
-    loss = -(targets * predictions.log()).sum(axis=1) #/ n
-    return loss.sum()
+    loss = (targets * predictions.log()).sum() / predictions.shape[1]
+    return -loss
 
 
 def binary_cross_entropy(targets, predictions, eps=1e-12):

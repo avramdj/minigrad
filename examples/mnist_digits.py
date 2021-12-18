@@ -2,7 +2,6 @@ import minigrad
 from minigrad import nn
 from sklearn import metrics, datasets
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
 import matplotlib.pyplot as plt
 from minigrad.data import DataLoader
 import numpy as np
@@ -46,10 +45,9 @@ class MnistClassifier(nn.Module):
         return np.argmax(probs.data, axis=1)
 
 
-ohe = OneHotEncoder()
 shape = X_train[0].shape
 batch_size = 64
-epochs = 100
+epochs = 200
 
 np.seterr(all='raise')
 
@@ -58,30 +56,28 @@ optimizer = minigrad.optim.Adam(model.params(), learning_rate=1e-3)
 criterion = nn.losses.MSE(n_classes)
 train_loader = DataLoader(X_train, y_train, batch_size=batch_size, tensors=True)
 losses = []
-try:
-    for i in range(epochs):
-        loss = 0
-        for x, gt in train_loader.get():
-            outputs = model(x)
-            cte = criterion(gt, outputs)
-            cte.backward()
-            optimizer.step()
-            optimizer.zero_grad()
-            loss += cte.data.item()
-        train_preds = model.predict(X_train)
-        train_acc = metrics.accuracy_score(y_train, train_preds)
-        validation_preds = model.predict(X_validation)
-        validation_acc = metrics.accuracy_score(y_validation, validation_preds)
-        print(f"Epoch {i:{len(str(epochs))}}/{epochs}, Loss: {loss:.3f}"
-              f", Train accuracy: {train_acc*100:.1f}%"
-              f", Validation accuracy: {validation_acc * 100:.1f}%")
-        losses.append(loss)
-except KeyboardInterrupt:
-    pass
+
+for i in range(epochs):
+    loss = 0
+    for x, gt in train_loader.get():
+        outputs = model(x)
+        cte = criterion(gt, outputs)
+        cte.backward()
+        optimizer.step()
+        optimizer.zero_grad()
+        loss += cte.data.item()
+    train_preds = model.predict(X_train)
+    train_acc = metrics.accuracy_score(y_train, train_preds)
+    validation_preds = model.predict(X_validation)
+    validation_acc = metrics.accuracy_score(y_validation, validation_preds)
+    print(f"Epoch {i+1:{len(str(epochs))}}/{epochs}, Loss: {loss:.3f}"
+          f", Train accuracy: {train_acc*100:.1f}%"
+          f", Validation accuracy: {validation_acc * 100:.1f}%")
+    losses.append(loss)
 
 test_preds = model.predict(X_test)
 test_acc = metrics.accuracy_score(y_test, test_preds)
-print(f"Test accuracy: {test_acc*100:.1f}")
+print(f"Test accuracy: {test_acc*100:.1f}%")
 
 plt.plot(losses)
 plt.show()
