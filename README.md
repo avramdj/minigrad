@@ -131,8 +131,8 @@ for i in range(epochs):
         outputs = model(x) # forward pass
         loss = criterion(gt, outputs) # compute loss
         loss.backward() # calculate the gradients
-        optimizer.step() # optimize 
-        optimizer.zero_grad()
+        optimizer.step() # update weights
+        optimizer.zero_grad() # reset gradients
         total_loss += loss.data.item()
     train_preds = model.predict(X_train)
     train_acc = metrics.accuracy_score(y_train, train_preds)
