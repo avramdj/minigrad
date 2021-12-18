@@ -56,6 +56,9 @@ class CPUDevice(np.ndarray):
     def expand_dims_(self, n):
         return np.expand_dims(self, n)
 
+    def broadcast_to_(self, shape):
+        return np.broadcast_to(self, shape)
+
     @staticmethod
     def array(data):
         return np.array(data).view(CPUDevice)

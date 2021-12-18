@@ -1,6 +1,5 @@
 from .module import Module
 from . import layers
 from . import losses
-
-__all__ = [Module, layers, losses]
-
+from .losses import *
+from .layers import *

@@ -6,6 +6,10 @@ class Function:
     pass
 
 
+def broadcast(a, shape):
+    return a.broadcast_to_(shape)
+
+
 def unbroadcast(a, shape):
     axdiff = len(a.shape) - len(shape)
     if axdiff <= 0:
@@ -64,35 +68,35 @@ class Pow(Function):
         return [unbroadcast(da, self.a.shape)]
 
 
-class Dot(Function):
-    def __init__(self, a, b):
-        self.a = a
-        self.b = b
-        self.is_vector = len(self.b.shape) == 1
-
-    def forward(self):
-        if self.is_vector:
-            self.b.shape = (self.b.shape[0], 1)
-            res = self.a.dot(self.b)
-            assert len(res.shape) == 2
-            res.shape = (res.shape[0],)
-            self.b.shape = (self.b.shape[0],)
-            return res
-        return self.a.dot(self.b)
-
-    def backward(self, grad):
-        if self.is_vector:
-            grad.shape = (grad.shape[0], 1)
-            self.b.shape = (self.b.shape[0], 1)
-            da = grad.dot(self.b.T)
-            db = self.a.T.dot(grad)
-            db.shape = (db.shape[0],)
-            grad.shape = (grad.shape[0],)
-            self.b.shape = (self.b.shape[0],)
-        else:
-            da = grad.dot(self.b.T)
-            db = self.a.T.dot(grad)
-        return [unbroadcast(da, self.a.shape), unbroadcast(db, self.b.shape)]
+# class Dot(Function):
+#     def __init__(self, a, b):
+#         self.a = a
+#         self.b = b
+#         self.is_vector = len(self.b.shape) == 1
+#
+#     def forward(self):
+#         if self.is_vector:
+#             self.b.shape = (self.b.shape[0], 1)
+#             res = self.a.dot(self.b)
+#             assert len(res.shape) == 2
+#             res.shape = (res.shape[0],)
+#             self.b.shape = (self.b.shape[0],)
+#             return res
+#         return self.a.dot(self.b)
+#
+#     def backward(self, grad):
+#         if self.is_vector:
+#             grad.shape = (grad.shape[0], 1)
+#             self.b.shape = (self.b.shape[0], 1)
+#             da = grad.dot(self.b.T)
+#             db = self.a.T.dot(grad)
+#             db.shape = (db.shape[0],)
+#             grad.shape = (grad.shape[0],)
+#             self.b.shape = (self.b.shape[0],)
+#         else:
+#             da = grad.dot(self.b.T)
+#             db = self.a.T.dot(grad)
+#         return [unbroadcast(da, self.a.shape), unbroadcast(db, self.b.shape)]
 
 
 class MatMul(Function):
@@ -117,7 +121,7 @@ class Log(Function):
         return self.a.log()
 
     def backward(self, grad):
-        da = self.a.pow(-1.0) * grad
+        da = grad / self.a
         return [unbroadcast(da, self.a.shape)]
 
 
@@ -127,9 +131,10 @@ class Exp(Function):
 
     def forward(self):
         return self.a.exp()
+        # return self.a.clip(-88, 88).exp()  # clip because log(FLOAT_MAX) = 88.7
 
     def backward(self, grad):
-        da = self.a.exp() * grad
+        da = self.forward() * grad
         return [unbroadcast(da, self.a.shape)]
 
 
@@ -153,7 +158,7 @@ class Tanh(Function):
         return self.a.tanh()
 
     def backward(self, grad):
-        da = (1 - self.a.tanh()**2) * grad
+        da = (1 - self.a.tanh() ** 2) * grad
         return [unbroadcast(da, self.a.shape)]
 
 
@@ -169,6 +174,18 @@ class ReLU(Function):
         return [unbroadcast(da, self.a.shape)]
 
 
+class Reshape(Function):
+    def __init__(self, a, shape):
+        self.a = a
+        self.shape = shape
+
+    def forward(self):
+        return self.a.reshape(self.shape)
+
+    def backward(self, grad):
+        return [grad.reshape(self.a.shape)]
+
+
 class Flatten(Function):
     def __init__(self, a, start_dim):
         self.a = a
@@ -179,7 +196,7 @@ class Flatten(Function):
 
     def backward(self, grad):
         da = grad.reshape(self.a.shape)
-        return [unbroadcast(da, self.a.shape)]
+        return [da]
 
 
 class Sum(Function):
@@ -192,27 +209,41 @@ class Sum(Function):
 
     # TODO: FIX
     def backward(self, grad):
-        da = grad
-        return [unbroadcast(da, self.a.shape)]
+        return [broadcast(grad, self.a.shape)]
+
+
+class Mean(Function):
+    def __init__(self, a, axis):
+        self.a = a
+        self.axis = axis
+
+    def forward(self):
+        return self.a.mean(axis=self.axis, keepdims=True)
+
+    # TODO: FIX
+    def backward(self, grad):
+        return [broadcast(grad, self.a.shape)]
 
 
 class Max(Function):
     def __init__(self, a, axis):
         self.a = a
         self.axis = axis
+        self.ret = None
 
     def forward(self):
-        return self.a.amax_(axis=self.axis, keepdims=True)
+        self.ret = self.a.amax_(axis=self.axis, keepdims=True)
+        return self.ret
 
     def backward(self, grad):
         ones = self.a == grad
-        div = ones.sum(axis=self.axis)
+        # TODO: CHECK THIS
+        div = ones.sum(axis=self.axis, keepdims=True)
         da = ones * grad / div
-        return [unbroadcast(da, self.a.shape)]
+        return [da]
 
 
 class Min(Function):
-    """ bad """
     def __init__(self, a, axis):
         self.a = a
         self.axis = axis
@@ -220,6 +251,7 @@ class Min(Function):
     def forward(self):
         return self.a.amin(axis=self.axis, keepdim=True)
 
+    # TODO: FIX BACKWARD
     def backward(self, grad):
         ones = self.a == grad
         div = ones.sum(axis=self.axis)

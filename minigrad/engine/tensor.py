@@ -94,10 +94,15 @@ class Tensor:
     def flatten(self, start_dim=0):
         return self._unary_param_op(self, start_dim, Flatten)
 
-    def sum(self, axis=1):
+    def sum(self, axis=None):
         # assert axis is not None or len(self.shape) == 1, ("Must provide axis for element-wise "
         #                                                   "sum when dims > 1")
         return self._unary_param_op(self, axis, Sum)
+
+    def mean(self, axis=None):
+        # assert axis is not None or len(self.shape) == 1, ("Must provide axis for element-wise "
+        #                                                   "sum when dims > 1")
+        return self._unary_param_op(self, axis, Mean)
 
     def max(self, axis=None):
         return self._unary_param_op(self, axis, Max)
@@ -167,7 +172,7 @@ class Tensor:
         return f"<Tensor {self.data.shape}>"
 
     def __getitem__(self, item):
-        return self.data[item]
+        return Tensor(self.data[item], requires_grad=self.requires_grad)
 
     def add_axis(self, axis):
         self.data = self.data.add_axis(axis)
@@ -231,7 +236,10 @@ class Tensor:
     @classmethod
     def rand_kaiming(cls, shape: Union[int, Iterable[int]], device=None, requires_grad=True):
         device = device if device else Device.CURRENT
-        return cls(np.random.rand(*shape)*np.sqrt(2./np.prod(shape)), device=device, requires_grad=requires_grad)
+        # return cls(np.random.rand(*shape)*np.sqrt(2./np.prod(shape)), device=device, requires_grad=requires_grad)
+        bound = np.sqrt(1.0 / shape[0])
+        return cls(np.random.uniform(-bound, bound, shape),
+                   device=device, requires_grad=requires_grad)
 
     @classmethod
     def full(cls, shape: Union[int, Iterable[int]], a: Union[int, float], device=None, requires_grad=True):
@@ -266,6 +274,8 @@ class Tensor:
 
     @staticmethod
     def _move(data, device) -> np.ndarray:
+        if isinstance(data, Number):
+            data = [data]
         if isinstance(data, list):
             data = np.array(data, dtype=np.float32)
         if isinstance(data, np.ndarray):
