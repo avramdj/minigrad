@@ -6,6 +6,7 @@ from sklearn import metrics, datasets
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 import matplotlib.pyplot as plt
+from minigrad.data import DataLoader
 from tqdm import tqdm
 
 digits = datasets.load_digits()
@@ -16,12 +17,11 @@ X_test /= 16.
 
 
 class MnistClassifier(nn.Module):
-    def __init__(self, input_shape, num_classes, z_size=32):
+    def __init__(self, input_shape, num_classes, z_size=100):
         super().__init__()
         self.input_shape = input_shape
-        flatten_shape = input_shape[0] * input_shape[1]
         self.flatten = nn.layers.Flatten()
-        self.linear1 = nn.layers.Linear(input_size=flatten_shape, output_size=z_size)
+        self.linear1 = nn.layers.Linear(input_size=np.prod(input_shape), output_size=z_size)
         self.activation = nn.layers.ReLU()
         self.linear2 = nn.layers.Linear(input_size=z_size, output_size=num_classes)
         # self.linear3 = nn.layers.Linear(input_size=z_size, output_size=num_classes)
@@ -42,33 +42,35 @@ class MnistClassifier(nn.Module):
 
 
 ohe = OneHotEncoder()
-y_train_ohe = ohe.fit_transform(y_train.reshape(-1, 1)).toarray()
 shape = X_train[0].shape
 n_classes = 10
+batch_size = 32
+epochs = 1000
 
-model = MnistClassifier(shape, n_classes, z_size=64)
-optimizer = minigrad.optim.Adam(model.params(), learning_rate=1e-3)
+model = MnistClassifier(shape, n_classes)
+optimizer = minigrad.optim.SGD(model.params(), learning_rate=1e-3)
+criterion = nn.losses.CrossEntropy(n_classes)
+train_loader = DataLoader(X_train, y_train, batch_size=batch_size, tensors=True)
 losses = []
-epochs = 100
-for i in range(epochs):
-    loss = 0
-    preds = []
-    for idx, (sample, gt) in enumerate(zip(X_train, y_train_ohe)):
-        x = minigrad.Tensor(sample, requires_grad=False)
-        gtt = mg.Tensor(gt, requires_grad=False)
-        output = model(x)
-        preds.append(np.argmax(output.data))
-        cte = nn.losses.cross_entropy(output, gtt)
-        cte.backward()
-        loss += cte.data
-    acc = metrics.accuracy_score(y_train, preds)
-    optimizer.step()
-    optimizer.zero_grad()
-    print(f"Epoch {i}/{epochs}, Loss: {loss:.3f}, Accuracy: {acc*100:.1f}%")
-    losses.append(loss)
-
-for idx, (sample, gt) in enumerate(zip(X_train[:10], y_train[:10])):
-    print(gt, model.predict(mg.Tensor(sample, requires_grad=False)))
+try:
+    for i in range(epochs):
+        loss = 0
+        preds = []
+        for x, gt in train_loader.get():
+            outputs = model(x)
+            cte = criterion(outputs, gt)
+            cte.backward()
+            loss += cte.data.item()
+            optimizer.step()
+            optimizer.zero_grad()
+        with mg.no_grad():
+            preds = model(mg.Tensor(X_train)).data
+        preds = [np.argmax(x) for x in preds]
+        acc = metrics.accuracy_score(y_train, preds)
+        print(f"Epoch {i}/{epochs}, Loss: {loss:.3f}, Accuracy: {acc*100:.1f}%")
+        losses.append(loss)
+except KeyboardInterrupt:
+    pass
 
 plt.plot(losses)
 plt.show()

@@ -3,19 +3,15 @@ from minigrad import Tensor, Parameter
 
 
 class Linear(Module):
-    def __init__(self, input_size, output_size):
+    def __init__(self, input_size: int, output_size: int):
         super().__init__()
-        if isinstance(input_size, tuple):
-            input_size = input_size[0]
-        if isinstance(output_size, tuple):
-            output_size = output_size[0]
         self.input_size = input_size
         self.output_size = output_size
-        self.matrix = Parameter.rand_kaiming((self.output_size, self.input_size), requires_grad=True)
+        self.matrix = Parameter.rand_kaiming((self.input_size, self.output_size), requires_grad=True)
         self.bias = Parameter.ones((self.output_size,), requires_grad=True)
 
     def forward(self, x):
-        res = self.matrix.dot(x) + self.bias
+        res = x @ self.matrix + self.bias
         return res
 
 
@@ -49,7 +45,8 @@ class Softmax(Module):
 
     def forward(self, x):
         e_x = x.exp()
-        return e_x / e_x.sum()
+        exs = e_x.sum(axis=1)
+        return e_x / exs
 
 
 class LogSoftmax(Module):
@@ -61,8 +58,9 @@ class LogSoftmax(Module):
 
 
 class Flatten(Module):
-    def __init__(self):
+    def __init__(self, batched=True):
         super().__init__()
+        self.batched = batched
 
     def forward(self, x):
-        return x.flatten()
+        return x.flatten(start_dim=1 if self.batched else 0)

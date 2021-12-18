@@ -2,8 +2,9 @@ from typing import Iterable, Union
 from ..engine import Tensor, Parameter
 
 
+# noinspection PyProtectedMember
 class _MetaModule(type):
-    def __call__(self, *args, **kwargs):
+    def __call__(cls, *args, **kwargs):
         module = super().__call__(*args, **kwargs)
         module._register_child_modules()
         module._register_child_params()

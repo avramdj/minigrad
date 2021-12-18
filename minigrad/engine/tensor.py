@@ -91,18 +91,19 @@ class Tensor:
     def relu(self):
         return self._unary_op(self, ReLU)
 
-    def flatten(self):
-        return self._unary_op(self, Flatten)
+    def flatten(self, start_dim=0):
+        return self._unary_param_op(self, start_dim, Flatten)
 
-    def sum(self, axis=0):
-        assert axis is not None or len(self.shape) == 1, ("Must provide axis for element-wise "
-                                                          "sum when dims > 1")
+    def sum(self, axis=1):
+        # assert axis is not None or len(self.shape) == 1, ("Must provide axis for element-wise "
+        #                                                   "sum when dims > 1")
         return self._unary_param_op(self, axis, Sum)
 
-    def max(self, axis=0):
-        assert axis is not None or len(self.shape) == 1, ("Must provide axis for element-wise "
-                                                          "sum when dims > 1")
+    def max(self, axis=None):
         return self._unary_param_op(self, axis, Max)
+
+    def min(self, axis=None):
+        return self._unary_param_op(self, axis, Min)
 
     def clip(self, a, b):
         ret = self.copy()
@@ -117,6 +118,10 @@ class Tensor:
         if self.grad:
             ret.grad = self.grad.copy()
         return ret
+
+    @property
+    def T(self):
+        return self._unary_op(self, Transpose)
 
     def __neg__(self):
         return self._unary_op(self, Neg)
@@ -148,6 +153,9 @@ class Tensor:
     def __truediv__(self, other: "Tensor"):
         z = other ** -1.0
         return self._binary_op(self, z, Mul)
+
+    def __matmul__(self, other: "Tensor"):
+        return self._binary_op(self, other, MatMul)
 
     def __pow__(self, alpha, modulo=None):
         return self._unary_param_op(self, alpha, Pow)
@@ -231,6 +239,11 @@ class Tensor:
         return cls(np.full(shape, a), device=device, requires_grad=requires_grad)
 
     @classmethod
+    def eye(cls, size: int, device=None, requires_grad=True):
+        device = device if device else Device.CURRENT
+        return cls(np.eye(size), device=device, requires_grad=requires_grad)
+
+    @classmethod
     def ones_like(cls, a: Union[np.ndarray, "Tensor"], device=None, requires_grad=True):
         device = device if device else a.device
         if isinstance(a, Tensor):
@@ -267,3 +280,9 @@ class Tensor:
 class Parameter(Tensor):
     def __init__(self, data: Union[list, np.ndarray, "Tensor"], **kwargs):
         super().__init__(data, **kwargs)
+
+
+class Variable(Tensor):
+    def __init__(self, data: Union[list, np.ndarray, "Tensor"], **kwargs):
+        super().__init__(data, **kwargs)
+        self.requires_grad = False
