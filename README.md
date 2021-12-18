@@ -34,7 +34,7 @@ history = []
 learning_rate = 1e-4
 epochs = 300
 
-x = Tensor([2])
+x = Tensor([2]) # initialize 1-D tensor [2]
 
 for i in range(epochs):
     z = (2*x + 50)**2 + x**2
