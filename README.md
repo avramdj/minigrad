@@ -4,6 +4,9 @@ Minigrad is an automatic tensor differentiation engine with a machine learning l
 - PyTorch-like API
 - GPU accelerated (soon)
 
+### Dependencies
+- `numpy`
+
 ### How it works
 
 The gradient of a tensor function `z` with respect to `x` can be computed using the [chain rule](https://en.wikipedia.org/wiki/Chain_rule).
