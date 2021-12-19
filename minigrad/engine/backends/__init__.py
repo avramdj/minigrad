@@ -1,4 +1,3 @@
-from . import cpu
-from . import cuda
+from .cpu import CPUDevice
+# from .cuda import CudaDevice
 
-__all__ = [cpu, cuda]

@@ -1,5 +1,4 @@
-from .engine import Tensor, Parameter
-from engine import device
+from .engine import Tensor, Parameter, device
 from . import engine
 from . import optim
 from . import nn

@@ -6,8 +6,8 @@ class Device:
     DEFAULT = os.environ.get("_MINIGRAD_DEVICE", "cpu")
     CURRENT = DEFAULT
     devices = {
-        "cpu": backends.cpu.CPUDevice,
-        "cuda": backends.cuda.CudaDevice
+        "cpu": backends.CPUDevice,
+        # "cuda": backends.CudaDevice
     }
 
     def __class_getitem__(cls, item: str):
