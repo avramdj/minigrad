@@ -1,5 +1,5 @@
 # minigrad
-Minigrad is an automatic tensor differentiation engine with a machine learning library on top of it.
+Minigrad is an automatic tensor differentiation engine with a deep learning library on top of it.
 
 - PyTorch-like API
 - GPU accelerated (soon)
