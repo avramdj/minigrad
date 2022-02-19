@@ -16,7 +16,7 @@ The gradient of a tensor function `z` with respect to `x` can be computed using 
 <img src="https://wikimedia.org/api/rest_v1/media/math/render/svg/e1a610aa8446be002e2e30d7121f6a87273d4caa" width="20%"/>
 
 This property of differentiation allows us to compute the gradient by dynamically building a
-[directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph) of the operations that produced `z` and visiting it in reverse topological order.
+[directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph) of the operations and variables that produced `z` and visiting it in reverse topological order.
 
 ### Simple example
 
