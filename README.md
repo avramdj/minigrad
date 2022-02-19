@@ -11,7 +11,9 @@ Minigrad is an automatic tensor differentiation engine with a deep learning libr
 
 The gradient of a tensor function `z` with respect to `x` can be computed using the [chain rule](https://en.wikipedia.org/wiki/Chain_rule).
 
-<img src="https://gcdn.pbrd.co/images/hKCJBEtyQ79h.png?o=1" width="20%"/>
+<!-- <img src="https://gcdn.pbrd.co/images/hKCJBEtyQ79h.png?o=1" width="20%"/> -->
+
+<img src="https://wikimedia.org/api/rest_v1/media/math/render/svg/e1a610aa8446be002e2e30d7121f6a87273d4caa" width="20%"/>
 
 This property of differentiation allows us to compute the gradient by dynamically building a
 [directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph) of the operations that produced `z` and visiting it in reverse topological order.
@@ -22,9 +24,10 @@ Minimizing the following real-valued function:
 
 <!-- <img src="https://gcdn.pbrd.co/images/Bokf3btMl72H.png?o=1" width="45%"/> -->
 
-<img src="https://gcdn.pbrd.co/images/HcMzdob6yUhg.png?o=1" width="35%"/>
+<!-- <img src="https://gcdn.pbrd.co/images/HcMzdob6yUhg.png?o=1" width="35%"/> -->
+`z(x) = (2x + 50)² + x²`
 
-which has a local minima at `x = -20` where `z(x) = 500`
+which has a local minima at `x0 = -20` where `z(x0) = 500`
 
 ```py
 import minigrad
@@ -43,16 +46,17 @@ for i in range(epochs):
     z = (2*x + 50)**2 + x**2
     history.append(z.numpy()[0])
     z.backward() # compute gradient
-    x -= x.grad * learning_rate # stochastic gradient descent, x.grad is dz/dx
-    x.zero_grad() # reset gradient before next iteration
-    z.zero_grad()
+    with minigrad.no_grad(): # disable gradients globally
+        x -= x.grad * learning_rate # stochastic gradient descent, x.grad is dz/dx
+        x.zero_grad() # reset gradient before next iteration
+        z.zero_grad()
 
 plt.figure()
 plt.plot(history)
 plt.show()
 ```
 
-<img src="https://gcdn.pbrd.co/images/NR9J9XKnN6ER.png?o=1" width="45%"/>
+<img src="https://i.imgur.com/V1CblGk.png" width="45%"/>
 
 
 ### The Neural Network module
@@ -156,4 +160,4 @@ plt.show()
 Epoch 50/50, Loss: 0.023, Train accuracy: 99.7%, Validation accuracy: 95.5%
 Test accuracy: 97.8%
 ```
-<img src="https://gcdn.pbrd.co/images/KFzSOQvnIucV.png?o=1" width="45%"/>
+<!-- <img src="https://gcdn.pbrd.co/images/KFzSOQvnIucV.png?o=1" width="45%"/> -->
