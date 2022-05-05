@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='minigrad',
+    name='python-minigrad',
     version='0.0.1',
     packages=find_packages('src'),
     url='https://github.com/avramdj/minigrad',
