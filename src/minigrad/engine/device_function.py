@@ -3,6 +3,7 @@ class Function:
     Function base for Add, Sub, etc...
     IMPORTANT: These functions work on raw data buffers, not Tensors
     """
+
     pass
 
 

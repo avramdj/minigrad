@@ -7,7 +7,7 @@ class DummyNet(nn.Module):
     def __init__(self):
         super().__init__()
         self.w = mg.Parameter([1])
-        self.layer_1 = lambda x: (x+self.w)**2
+        self.layer_1 = lambda x: (x + self.w) ** 2
 
     def forward(self, x):
         x = self.layer_1(x)

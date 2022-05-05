@@ -31,12 +31,12 @@ class BinaryCrossEntropyLoss(nn.Module):
 def mse(targets, predictions, one_hot=False, C=None):
     if not one_hot:
         targets = one_hot_encode(targets, C=C)
-    return ((targets-predictions)**2).mean()
+    return ((targets - predictions) ** 2).mean()
 
 
 def cross_entropy(targets, predictions, eps=1e-12, one_hot=False, C=None):
     """
-        Calculates categorical cross entropy between targets and predictions.
+    Calculates categorical cross entropy between targets and predictions.
     """
     # TODO: fix
     if not one_hot:

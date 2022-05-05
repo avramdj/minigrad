@@ -7,7 +7,9 @@ class Linear(Module):
         super().__init__()
         self.input_size = input_size
         self.output_size = output_size
-        self.matrix = Parameter.rand_kaiming((self.input_size, self.output_size), requires_grad=True)
+        self.matrix = Parameter.rand_kaiming(
+            (self.input_size, self.output_size), requires_grad=True
+        )
         self.bias = Parameter.ones((self.output_size,), requires_grad=True)
 
     def forward(self, x):
@@ -37,7 +39,7 @@ class Sigmoid(Module):
         super().__init__()
 
     def forward(self, x):
-        return (1+(-x).exp())**(-1)
+        return (1 + (-x).exp()) ** (-1)
 
 
 class Tanh(Module):

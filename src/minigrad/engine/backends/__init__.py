@@ -1,3 +1,3 @@
 from .cpu import CPUDevice
-# from .cuda import CudaDevice
 
+# from .cuda import CudaDevice

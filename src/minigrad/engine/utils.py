@@ -1,7 +1,9 @@
 NO_GRAD = False
 
+
 def is_grad():
     return NO_GRAD
+
 
 class no_grad:
     def __enter__(self):

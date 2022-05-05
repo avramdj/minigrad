@@ -6,6 +6,7 @@ class CudaDevice(cu.ndarray):
     """
     The CUDA device is a CuPy interface
     """
+
     def log(self):
         return cu.log(self)
 

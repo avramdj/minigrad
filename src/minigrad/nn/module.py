@@ -16,6 +16,7 @@ class Module(metaclass=_MetaModule):
     Base class for all minigrad modules.
     Derived classes must implement forward(self, *args, **kwargs)
     """
+
     def __init__(self):
         self._params: List[Tensor] = []
 

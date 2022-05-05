@@ -9,11 +9,15 @@ import numpy as np
 n_classes = 10
 digits = datasets.load_digits(n_class=n_classes)
 
-X_train, X_test, y_train, y_test = train_test_split(digits.images, digits.target, train_size=0.8)
-X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, train_size=0.8)
-X_train /= 16.
+X_train, X_test, y_train, y_test = train_test_split(
+    digits.images, digits.target, train_size=0.8
+)
+X_train, X_validation, y_train, y_validation = train_test_split(
+    X_train, y_train, train_size=0.8
+)
+X_train /= 16.0
 X_validation /= 16
-X_test /= 16.
+X_test /= 16.0
 
 
 class MnistClassifier(nn.Module):
@@ -49,7 +53,7 @@ shape = X_train[0].shape
 batch_size = 64
 epochs = 200
 
-np.seterr(all='raise')
+np.seterr(all="raise")
 
 model = MnistClassifier(shape, n_classes)
 optimizer = minigrad.optim.Adam(model.params(), learning_rate=1e-3)
@@ -70,9 +74,11 @@ for i in range(epochs):
     train_acc = metrics.accuracy_score(y_train, train_preds)
     validation_preds = model.predict(X_validation)
     validation_acc = metrics.accuracy_score(y_validation, validation_preds)
-    print(f"Epoch {i+1:{len(str(epochs))}}/{epochs}, Loss: {loss:.3f}"
-          f", Train accuracy: {train_acc*100:.1f}%"
-          f", Validation accuracy: {validation_acc * 100:.1f}%")
+    print(
+        f"Epoch {i+1:{len(str(epochs))}}/{epochs}, Loss: {loss:.3f}"
+        f", Train accuracy: {train_acc*100:.1f}%"
+        f", Validation accuracy: {validation_acc * 100:.1f}%"
+    )
     losses.append(loss)
 
 test_preds = model.predict(X_test)
