@@ -4,6 +4,9 @@ setup(
     name="python-minigrad",
     packages=find_packages("src"),
     url="https://github.com/avramdj/minigrad",
+    install_requires=[
+        "numpy"
+    ],
     license="MIT License",
     author="Avram Djordjevic",
     author_email="avramdjordjevic2@gmail.com",
