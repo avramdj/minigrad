@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='python-minigrad',
     version='0.0.1',
-    packages=find_packages('src'),
+    packages=['minigrad'],
     url='https://github.com/avramdj/minigrad',
     license='MIT License',
     author='Avram Djordjevic',
