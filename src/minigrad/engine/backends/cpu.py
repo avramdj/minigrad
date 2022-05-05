@@ -5,6 +5,7 @@ class CPUDevice(np.ndarray):
     """
     The CPU device is a numpy interface
     """
+
     def log(self):
         return np.log(self)
 

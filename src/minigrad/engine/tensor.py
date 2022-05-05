@@ -7,9 +7,11 @@ from .utils import is_grad
 
 
 class Tensor:
-    """ Tensor and its gradient """
+    """Tensor and its gradient"""
 
-    def __init__(self, data: Union[list, np.ndarray, "Tensor"], device=None, requires_grad=True):
+    def __init__(
+        self, data: Union[list, np.ndarray, "Tensor"], device=None, requires_grad=True
+    ):
         self.device = device if device else Device.CURRENT
         self.data = self._move(data, self.device)
         self.grad = None
@@ -41,7 +43,9 @@ class Tensor:
             nabla = v._function.backward(v.grad.data)
             for grad, parent in zip(nabla, v._parents):
                 if parent.requires_grad:
-                    parent.grad = Tensor(grad + (parent.grad.data if parent.grad else 0))
+                    parent.grad = Tensor(
+                        grad + (parent.grad.data if parent.grad else 0)
+                    )
                 pass
 
     def _backward(self):
@@ -156,7 +160,7 @@ class Tensor:
         return self._binary_op(other, self, Mul)
 
     def __truediv__(self, other: "Tensor"):
-        z = other ** -1.0
+        z = other**-1.0
         return self._binary_op(self, z, Mul)
 
     def __matmul__(self, other: "Tensor"):
@@ -192,8 +196,10 @@ class Tensor:
                 return a
             return res
         if inplace:
-            raise Exception("Attempted inplace operation on a leaf variable, set requires_grad=False or disable "
-                            "gradients globally")
+            raise Exception(
+                "Attempted inplace operation on a leaf variable, set requires_grad=False or disable "
+                "gradients globally"
+            )
         res._function = func
         res._parents = [a, b]
         return res
@@ -234,15 +240,26 @@ class Tensor:
         return cls(np.random.rand(*shape), device=device, requires_grad=requires_grad)
 
     @classmethod
-    def rand_kaiming(cls, shape: Union[int, Iterable[int]], device=None, requires_grad=True):
+    def rand_kaiming(
+        cls, shape: Union[int, Iterable[int]], device=None, requires_grad=True
+    ):
         device = device if device else Device.CURRENT
         # return cls(np.random.rand(*shape)*np.sqrt(2./np.prod(shape)), device=device, requires_grad=requires_grad)
         bound = np.sqrt(1.0 / shape[0])
-        return cls(np.random.uniform(-bound, bound, shape),
-                   device=device, requires_grad=requires_grad)
+        return cls(
+            np.random.uniform(-bound, bound, shape),
+            device=device,
+            requires_grad=requires_grad,
+        )
 
     @classmethod
-    def full(cls, shape: Union[int, Iterable[int]], a: Union[int, float], device=None, requires_grad=True):
+    def full(
+        cls,
+        shape: Union[int, Iterable[int]],
+        a: Union[int, float],
+        device=None,
+        requires_grad=True,
+    ):
         device = device if device else Device.CURRENT
         return cls(np.full(shape, a), device=device, requires_grad=requires_grad)
 
@@ -256,21 +273,29 @@ class Tensor:
         device = device if device else a.device
         if isinstance(a, Tensor):
             a = a.data
-        return cls(np.ones_like(a, dtype=np.float32), device, requires_grad=requires_grad)
+        return cls(
+            np.ones_like(a, dtype=np.float32), device, requires_grad=requires_grad
+        )
 
     @classmethod
     def rand_like(cls, a: Union[np.ndarray, "Tensor"], device=None, requires_grad=True):
         device = device if device else a.device
         if isinstance(a, Tensor):
             a = a.data
-        return cls(np.random.rand(a, dtype=np.float32), device, requires_grad=requires_grad)
+        return cls(
+            np.random.rand(a, dtype=np.float32), device, requires_grad=requires_grad
+        )
 
     @classmethod
-    def zeros_like(cls, a: Union[np.ndarray, "Tensor"], device=None, requires_grad=True):
+    def zeros_like(
+        cls, a: Union[np.ndarray, "Tensor"], device=None, requires_grad=True
+    ):
         device = device if device else a.device
         if isinstance(a, Tensor):
             a = a.data
-        return cls(np.zeros_like(a, dtype=np.float32), device, requires_grad=requires_grad)
+        return cls(
+            np.zeros_like(a, dtype=np.float32), device, requires_grad=requires_grad
+        )
 
     @staticmethod
     def _move(data, device) -> np.ndarray:
