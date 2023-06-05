@@ -1,6 +1,7 @@
+import matplotlib.pyplot as plt
+
 import minigrad as mg
 from minigrad import nn
-import matplotlib.pyplot as plt
 
 
 class DummyNet(nn.Module):
