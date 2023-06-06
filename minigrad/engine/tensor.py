@@ -7,7 +7,8 @@ import numpy as np
 from minigrad.device import DeviceManager
 from minigrad.engine.buffer import Buffer
 from minigrad.engine.buffer_manager import Bufferable, create_buffer
-from minigrad.engine.function import Add, Div, Function, MatMul, Mean, Mul, Neg, Pow, Sub
+from minigrad.engine.function import (Add, Div, Function, MatMul, Mean, Mul,
+                                      Neg, Pow, Sub)
 
 Tensorable = Union["Tensor", Bufferable, Buffer]
 
