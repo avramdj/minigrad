@@ -1,39 +1,52 @@
-from abc import ABC
+from __future__ import annotations
 
-import minigrad
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Union
 
-_DEVICES = ["cpu", "cuda"]
+import numpy as np
 
-
-# create_buffer is a function that takes in data and device and returns a subclass of Buffer depending on the device
-def create_buffer(data, device: str):
-    if device == "cpu":
-        return CPUBuffer(data)
-    elif device == "cuda":
-        return CUDABuffer(data)
+from minigrad.device import DeviceManager
 
 
 class Buffer(ABC):
-    def __init__(self, data, device: str) -> None:
+    def __init__(self, data: Bufferable, device: str) -> None:
         super().__init__()
-        if device not in _DEVICES:
-            raise ValueError(f"device must be one of {_DEVICES}")
-        if device == "cuda" and not minigrad.utils.cuda.is_available():
-            raise ValueError("cuda device is not available")
+        assert device in DeviceManager.supported_devices
+        self.device = device
+
+    @abstractmethod
+    def __getitem__(self, index: slice) -> Buffer:
+        pass
+
+    @abstractmethod
+    def log(self) -> Buffer:
+        pass
+
+    @abstractmethod
+    def exp(self) -> Buffer:
+        pass
+
+    @abstractmethod
+    def transpose(self, axis=None) -> Buffer:
+        pass
+
+    @abstractmethod
+    def sqrt(self) -> Buffer:
+        pass
+
+    @abstractmethod
+    def to_numpy(self) -> np.ndarray:
+        pass
+
+    @abstractmethod
+    def mean(self, axis=0) -> Buffer:
+        pass
+
+    @abstractmethod
+    def size(
+        self,
+    ) -> int:
+        pass
 
 
-class CPUBuffer(Buffer):
-    def __init__(self, data) -> None:
-        super().__init__(data, "cpu")
-        self.data = data
-
-    def __repr__(self) -> str:
-        return f"CPUBuffer({self.data})"
-
-
-class CUDABuffer(Buffer):
-    def __init__(self, data) -> None:
-        super().__init__(data, "cuda")
-
-    def __repr__(self) -> str:
-        return f"CUDABuffer({self.data})"
+Bufferable = Union[int, float, list, np.ndarray, Buffer]
