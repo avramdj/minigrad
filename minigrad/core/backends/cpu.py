@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import numpy as np
 
-from minigrad.engine.buffer import Buffer, Bufferable
+from minigrad.core.buffer import Buffer, Bufferable
 
 
 class CPUBuffer(Buffer):
-    def __init__(self, data: Bufferable, from_ops=False) -> None:
+    def __init__(self, data: Bufferable, from_ops=False, dtype=None) -> None:
         super().__init__(data, "cpu")
         self._data: np.ndarray
         if from_ops and isinstance(data, np.ndarray):
@@ -16,7 +16,7 @@ class CPUBuffer(Buffer):
                 self._data = data._data.copy()
             else:
                 # yes, it does copy the data
-                self._data = np.array(data)
+                self._data = np.array(data, dtype=dtype)
 
     def __getitem__(self, index: slice) -> CPUBuffer:
         return CPUBuffer(self._data[index])
@@ -46,20 +46,36 @@ class CPUBuffer(Buffer):
     def exp(self) -> CPUBuffer:
         return CPUBuffer(np.exp(self._data))
 
-    def transpose(self, axes=None) -> Buffer:
+    def transpose(self, axes=None) -> CPUBuffer:
         data = self._data.copy()
         return CPUBuffer(data.transpose(axes=axes))
 
-    def sqrt(self) -> Buffer:
+    def sqrt(self) -> CPUBuffer:
         return CPUBuffer(np.sqrt(self._data))
 
-    def mean(self, axis=0) -> Buffer:
+    def mean(self, axis=0) -> CPUBuffer:
         return CPUBuffer(np.mean(self._data, axis=axis))
 
-    def to_numpy(self) -> np.ndarray:
+    def numpy(self) -> np.ndarray:
         return self._data
 
     def size(self) -> int:
         return self._data.size
+
+    def flatten(self, start_dim=0) -> CPUBuffer:
+        assert start_dim >= 0 and start_dim <= len(
+            self._data.shape
+        ), "start_dim must be in range [0, len(shape)]"
+        return CPUBuffer(self._data.reshape(*self._data.shape[:start_dim], -1))
+
+    def reshape(self, shape) -> CPUBuffer:
+        return CPUBuffer(self._data.reshape(shape))
+        
+    def tanh(self) -> CPUBuffer:
+        return CPUBuffer(np.tanh(self._data))
+
+    def sum(self, axis=None) -> CPUBuffer:
+        return CPUBuffer(np.sum(self._data, axis=axis))
+
 
     # TODO: sum, etc

@@ -3,10 +3,11 @@ from __future__ import annotations
 from os import getenv
 from typing import TYPE_CHECKING, Any, List, Optional, Tuple
 
-from minigrad.engine.buffer import Buffer
+from minigrad.core.buffer import Buffer
+from minigrad.core.context import is_grad
 
 if TYPE_CHECKING:
-    from minigrad.engine.tensor import Tensor
+    from minigrad.core.tensor import Tensor
 
 
 class Function:
@@ -24,10 +25,9 @@ class Function:
         for arg in args:
             if arg.device != args[0].device:
                 raise ValueError("All tensors must be on the same device")
+        if is_grad() and any(arg.requires_grad for arg in args):
+            self.ctx: List[Any] = list(args)
         data = self.forward(*args)
-        requires_grad = any(arg.requires_grad for arg in args)
-        if requires_grad:
-            self.saved_tensors = list(args)
         return data
 
 
@@ -54,67 +54,51 @@ class Sub(Function):
 class Mul(Function):
     def forward(self, *args: Tensor) -> Buffer:
         a, b = args
-        self.a = a
-        self.b = b
         data = a.data * b.data
         return data
 
     def backward(self, grad_output: Tensor) -> Tuple[Optional[Tensor], ...]:
-        return grad_output * self.b, grad_output * self.a
+        return grad_output * self.ctx[1], grad_output * self.ctx[0]
 
 
 class Div(Function):
     def forward(self, *args: Tensor) -> Buffer:
         a, b = args
-        self.a = a
-        self.b = b
         data = a.data / b.data
         return data
 
     def backward(self, grad_output: Tensor) -> Tuple[Optional[Tensor], ...]:
-        return grad_output / self.b, -grad_output * self.a / (self.b**2)
+        return grad_output / self.ctx[1], -grad_output * self.ctx[0] / (self.ctx[1] ** 2)
 
 
 class Pow(Function):
     def forward(self, *args: Tensor) -> Buffer:
         a, exponent = args
-        self.a = a
-        self.exponent = exponent.data
         data = a.data**exponent.data
         return data
 
     def backward(self, grad_output: Tensor) -> Tuple[Optional[Tensor], ...]:
-        return self.exponent * (self.a.data ** (self.exponent - 1)) * grad_output, None
+        return grad_output * self.ctx[1] * (self.ctx[0].data ** (self.ctx[1] - 1.0)), None
 
 
 class Exp(Function):
     def forward(self, *args: Tensor) -> Buffer:
         self.a = args[0]
         data = self.a.data.exp()
-        requires_grad = self.a.requires_grad
-        # TODO: check if this is necessary, seems bloated
-        if not getenv("MEMORY_OPTIMIZED", False):
-            self.save_for_backward = data
-        return Tensor(data, requires_grad=requires_grad, device=self.a.device)
+        return data
 
     def backward(self, grad_output: Tensor) -> Tuple[Optional[Tensor], ...]:
-        if self.save_for_backward is not None:
-            data = self.save_for_backward
-        else:
-            data = self.a.data.exp()
-        return (data * grad_output,)
+        return (self.ctx[0].data.exp() * grad_output,)
 
 
 class MatMul(Function):
     def forward(self, *args: Tensor) -> Buffer:
         a, b = args
-        self.a = a
-        self.b = b
         data = a.data @ b.data
         return data
 
     def backward(self, grad_output: Tensor) -> Tuple[Optional[Tensor], ...]:
-        return grad_output @ self.b.T(), self.a.T() @ grad_output
+        return grad_output @ self.ctx[1].T(), self.ctx[0].T() @ grad_output
 
 
 class Neg(Function):
@@ -134,9 +118,87 @@ class Mean(Function):
 
     def forward(self, *args: Tensor) -> Buffer:
         a = args[0]
-        self.a = a
         data = a.data.mean(axis=self.axis)
         return data
 
     def backward(self, grad_output: Tensor) -> Tuple[Optional[Tensor], ...]:
-        return (grad_output / self.a.data.size(),)
+        return (grad_output / self.ctx[0].data.size(),)
+
+
+class Log(Function):
+    def forward(self, *args: Tensor) -> Buffer:
+        a = args[0]
+        data = a.data.log()
+        return data
+
+    def backward(self, grad_output: Tensor) -> Tuple[Optional[Tensor], ...]:
+        return (grad_output / self.ctx[0].data,)
+
+
+class Sqrt(Function):
+    def forward(self, *args: Tensor) -> Buffer:
+        a = args[0]
+        data = a.data.sqrt()
+        return data
+
+    def backward(self, grad_output: Tensor) -> Tuple[Optional[Tensor], ...]:
+        return (1 / 2 * grad_output / self.ctx[0].data.sqrt(),)
+
+
+class Tanh(Function):
+    def forward(self, *args: Tensor) -> Buffer:
+        a = args[0]
+        data = a.data.tanh()
+        return data
+
+    def backward(self, grad_output: Tensor) -> Tuple[Optional[Tensor], ...]:
+        return (grad_output * (1 - self.ctx[0].data.tanh() ** 2),)
+
+
+class ReLU(Function):
+    def forward(self, *args: Tensor) -> Buffer:
+        a = args[0]
+        data = a.data.relu()
+        return data
+
+    def backward(self, grad_output: Tensor) -> Tuple[Optional[Tensor], ...]:
+        return (grad_output * (self.ctx[0].data > 0),)
+
+class Flatten(Function):
+    def __init__(self, start_dim) -> None:
+        super().__init__()
+        self.start_dim = start_dim
+
+    def forward(self, *args: Tensor) -> Buffer:
+        a = args[0]
+        data = a.data.flatten(self.start_dim)
+        return data
+
+    def backward(self, grad_output: Tensor) -> Tuple[Optional[Tensor], ...]:
+        return (grad_output.reshape(self.ctx[0].shape),)
+    
+class Reshape(Function):
+    def __init__(self, shape) -> None:
+        super().__init__()
+        self.shape = shape
+
+    def forward(self, *args: Tensor) -> Buffer:
+        a = args[0]
+        data = a.data.reshape(self.shape)
+        return data
+
+    def backward(self, grad_output: Tensor) -> Tuple[Optional[Tensor], ...]:
+        return (grad_output.reshape(self.ctx[0].shape),)
+    
+class Sum(Function):
+    def __init__(self, axis) -> None:
+        super().__init__()
+        self.axis = axis
+
+    def forward(self, *args: Tensor) -> Buffer:
+        a = args[0]
+        data = a.data.sum(axis=self.axis)
+        return data
+
+    def backward(self, grad_output: Tensor) -> Tuple[Optional[Tensor], ...]:
+        return (grad_output.reshape(self.ctx[0].shape),)

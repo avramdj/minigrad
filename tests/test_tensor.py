@@ -1,4 +1,4 @@
-import minigrad.engine.tensor as Tensor
+import minigrad.core.tensor as Tensor
 
 
 def test_create_tensor():
