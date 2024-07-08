@@ -1,20 +1,17 @@
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn import datasets, metrics
+from sklearn.model_selection import train_test_split
+
 import minigrad
 from minigrad import nn
-from sklearn import metrics, datasets
-from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
 from minigrad.data import DataLoader
-import numpy as np
 
 n_classes = 10
 digits = datasets.load_digits(n_class=n_classes)
 
-X_train, X_test, y_train, y_test = train_test_split(
-    digits.images, digits.target, train_size=0.8
-)
-X_train, X_validation, y_train, y_validation = train_test_split(
-    X_train, y_train, train_size=0.8
-)
+X_train, X_test, y_train, y_test = train_test_split(digits.images, digits.target, train_size=0.8)
+X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, train_size=0.8)
 X_train /= 16.0
 X_validation /= 16
 X_test /= 16.0
