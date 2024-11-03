@@ -1,0 +1,6 @@
+{
+    "typeCheckingMode": "basic",
+    "reportMissingImports": "error",
+    "reportUnusedImport": "warning",
+    "reportUnnecessaryTypeIgnoreComment": "none"
+}

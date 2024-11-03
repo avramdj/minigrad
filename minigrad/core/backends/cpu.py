@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+from typing import Optional, Tuple, Union
 
 from minigrad.core.buffer import Buffer, Bufferable
 
@@ -46,9 +47,9 @@ class CPUBuffer(Buffer):
     def exp(self) -> CPUBuffer:
         return CPUBuffer(np.exp(self._data))
 
-    def transpose(self, axes=None) -> CPUBuffer:
+    def transpose(self, axes: Optional[Union[Tuple[int, ...], None]] = None) -> CPUBuffer:
         data = self._data.copy()
-        return CPUBuffer(data.transpose(axes=axes))
+        return CPUBuffer(data.transpose(axes))
 
     def sqrt(self) -> CPUBuffer:
         return CPUBuffer(np.sqrt(self._data))
@@ -77,5 +78,7 @@ class CPUBuffer(Buffer):
     def sum(self, axis=None) -> CPUBuffer:
         return CPUBuffer(np.sum(self._data, axis=axis))
 
+    def relu(self) -> CPUBuffer:
+        return CPUBuffer(np.maximum(0, self._data))
 
     # TODO: sum, etc
