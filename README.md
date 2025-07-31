@@ -1,7 +1,7 @@
+## Update: This is no longer maintained, check out [minigrad-x](https://github.com/avramdj/minigrad-x)
+
 # minigrad
 Minigrad is an automatic tensor differentiation engine with a deep learning library on top of it.
-
-## Update: This is no longer maintained, check out [minigrad-x](https://github.com/avramdj/minigrad-x)
 
 - PyTorch-like API
 - GPU accelerated (soon)
